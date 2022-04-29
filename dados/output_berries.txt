@@ -1,27 +1,27 @@
-mertilo
-mertilo
-mertilo
-mertilo
-mertilo
-mertilo
-mertilo
-framboesa
-framboesa
-framboesa
-framboesa
-framboesa
-framboesa
-framboesa
-framboesa
-framboesa
-acai
-acai
-acai
-acai
-acai
-acai
-acai
-acai
-acai
-acai
-acai
+1 0 0 #mertilo 
+1 0 0
+1 0 0
+1 0 0
+1 0 0
+1 0 0
+1 0 0
+0 1 0 #framboesa
+0 1 0
+0 1 0
+0 1 0
+0 1 0
+0 1 0
+0 1 0
+0 1 0
+0 1 0
+0 0 1 #acai
+0 0 1
+0 0 1
+0 0 1
+0 0 1
+0 0 1
+0 0 1
+0 0 1
+0 0 1
+0 0 1
+0 0 1

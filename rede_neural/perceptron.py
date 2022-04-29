@@ -8,9 +8,27 @@ Created on Tue Apr 19 21:06:07 2022
 
 import numpy as np
 
+#%% Função de Ativação
+
+def deg(v):
+    if  v>=0:
+        return 1
+    else:
+        return 0
+
+def tanh(v):
+    return np.tanh(v/2)
+
+def sigmoid(v):
+    return 1/(1 + np.exp(-v))
+
+def dsigmoid(v):
+    return sigmoid(v)*(1 - sigmoid(v))
+
+#%%
 class layer:
     def __init__(self, number_of_neurons:int, number_of_atributes:int,
-                 func_activation:any):
+                 func_activation:any = sigmoid):
         self.number_of_atributes    = number_of_atributes
         self.number_of_inputs       = self.number_of_atributes + 1
         self.number_of_neurons      = number_of_neurons
@@ -56,7 +74,7 @@ class layer:
 
     
 class multi_layer:
-    def __init__(self, layer_list:list, derivate_func_activation:any):
+    def __init__(self, layer_list:list, derivate_func_activation:any = dsigmoid):
         self.layer_list       = layer_list
         self.number_of_layers = len(self.layer_list)
         self.dphi             = derivate_func_activation
