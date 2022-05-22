@@ -26,7 +26,7 @@ def dsigmoid(v):
     return sigmoid(v)*(1 - sigmoid(v))
 
 #%%
-class layer:
+class single_layer:
     def __init__(self, number_of_neurons:int, number_of_atributes:int,
                  func_activation:any = sigmoid):
         self.number_of_atributes    = number_of_atributes
@@ -98,6 +98,19 @@ class multi_layer:
     def apply(self, data:np.array):
         phi_v,_ = self._foward_propagation_(data)
         return phi_v[-1]
+#%% Função de criação do mlp
+
+def begin_mlp(neurons_per_layer:list, inputs:int, outputs:int):
+    assert neurons_per_layer[-1] == outputs,"Número de neurônios na última camada deve ser igual ao número de classes"
+    aux = []
+    for k,i in enumerate(neurons_per_layer):
+        if k == 0:
+            aux.append(single_layer(i, inputs))
+        else:
+            aux.append(single_layer(i, neurons_per_layer[k-1]))
+    
+    mlp = multi_layer(aux)
+    return mlp
     
     
 # =============================================================================
