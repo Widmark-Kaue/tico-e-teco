@@ -51,49 +51,49 @@ def training_multi_layer(mlp:p.multi_layer, database:np.array, data_out:np.array
     for epoca in range(number_of_epoca):
         for row in row_vector:
           phi_v, dphi_v = mlp._foward_propagation_(database[row])
-          state_weight  = mlp.weight_list.copy()
+          state_weight  = mlp.weight_list().copy()
           
           phi_v.append(data_out[row])
           phi_v.insert(0, database[row])
           
           
-          delta_k       = []
+          delta_k       = [0,0]
           w_k           = []
-          erro_ac       = 0.0
+          erro_n        = 0.0
+          erro_N        = 0.0  
           aux           = mlp.layer_list.copy()
           
           aux.reverse()
-          for k, layer in enumerate(aux):      
-             
-              if k == 0:                                    #Camada de saída
-                  e_k = (phi_v[k] - phi_v[k+1])
+          for i, layer in enumerate(aux):      
+              k = -(i+1)
+              if i == 0:                                    #Camada de saída
+                  e_k = (phi_v[k] - phi_v[k-1])
               else:                                         #Camadas escondidas
-                  e_k = np.dot(delta_k[k+1].T, state_weight[k+1]) 
+                  e_k = np.dot(delta_k[0].T, state_weight[k+1])
+                  e_k = e_k[0,1:]                           #descartanto o bias
               
-              print(phi_v[k+2])
-              Yi  = np.r_[1, phi_v[k+2]].reshape(1, len(phi_v[k+2]) + 1)
-              print(Yi)
+              erro_n += sum(e_k**2/2)
+              Yi  = np.r_[1, phi_v[k-2]].reshape(1, len(phi_v[k-2]) + 1)
               aux2 = e_k*dphi_v[k]
-              delta_k.append((aux2).reshape(layer.number_of_neurons + 1, 1))
+              delta_k[i%2] = (aux2).reshape(layer.number_of_neurons, 1)
               
-              Delta_k = eta(epoca)*np.dot(delta_k[k],Yi)
+              Delta_k = eta(epoca)*np.dot(delta_k[i],Yi)
               w_k     = layer.weight_matriz + Delta_k
               layer.weight_aplicate(w_k)
           
-          erro_ac += float(sum(0.5*e_k**2))
-          if random:
-              np.random.shuffle(row_vector)
-          if erro_ac <= tol:
-              print('-'*10+ f'Época de treinamento {epoca}'+'-'*10)
-              print("Perceptron Convergiu")
-              print(f'Erro na última época = {erro_ac}')
-              break
-          if epoca%show_per_epoca == 0:
-              print('-'*10+ f'Época de treinamento {epoca}'+'-'*10)
-              print(f'Erro na época {epoca} = {erro_ac}')
-         
-    return 0
-    
+        erro_N += erro_n/epoca
+        
+        if random:
+            np.random.shuffle(row_vector)
+        if erro_N <= tol:
+            print('-'*10+ f'Época de treinamento {epoca}'+'-'*10)
+            print("Perceptron Convergiu")
+            print(f'Erro na última época = {erro_N}')
+            break
+        if epoca%show_per_epoca == 0:
+            print('-'*10+ f'Época de treinamento {epoca}'+'-'*10)
+            print(f'Erro médio na época {epoca} = {erro_N}')  
+            print(f'Pesos  = {mlp.weight_list()}')
 #%% Desempenho
 
 # =============================================================================

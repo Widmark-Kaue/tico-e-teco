@@ -78,7 +78,6 @@ class multi_layer:
         self.layer_list       = layer_list
         self.number_of_layers = len(self.layer_list)
         self.dphi             = derivate_func_activation
-        self.weight_list      = [layer.weight_matriz for layer in self.layer_list]  
         
         for i in range(len(layer_list)-1):
             aux = layer_list[i].number_of_neurons == layer_list[i+1].number_of_atributes
@@ -98,6 +97,9 @@ class multi_layer:
     def apply(self, data:np.array):
         phi_v,_ = self._foward_propagation_(data)
         return phi_v[-1]
+    
+    def weight_list(self,):
+        return [layer.weight_matriz for layer in self.layer_list]  
 #%% Função de criação do mlp
 
 def begin_mlp(neurons_per_layer:list, inputs:int, outputs:int):
