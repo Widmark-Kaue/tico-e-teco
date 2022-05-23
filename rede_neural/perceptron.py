@@ -115,9 +115,3 @@ def begin_mlp(neurons_per_layer:list, inputs:int, outputs:int):
     return mlp
     
     
-# =============================================================================
-# Implementar somente a classe layer e excluir a classe neuron 
-# - Aumenta consideravelmente as operações matriciais
-# - Deixa a estrutura mais rígida
-# - menos acesso aos neurônios individualmente e seus parâmetros 
-# =============================================================================
