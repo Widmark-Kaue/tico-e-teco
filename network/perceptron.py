@@ -5,9 +5,7 @@ Created on Tue Apr 19 21:06:07 2022
 
 @author: widmark
 """
-
 import numpy as np
-
 #%% Função de Ativação
 
 def deg(v):
@@ -99,10 +97,15 @@ class multi_layer:
         return phi_v[-1]
     
     def weight_list(self,):
-        return [layer.weight_matriz for layer in self.layer_list]  
+        return [layer.weight_matriz for layer in self.layer_list]
+    
+    def weight_random_init(self, value_max:int = 1, value_min:int = -1):
+        for layer_i in self.layer_list:
+            layer_i.weight_random_init(value_max, value_min)
+            
 #%% Função de criação do mlp
 
-def begin_mlp(neurons_per_layer:list, inputs:int, outputs:int):
+def begin_mlp(neurons_per_layer:list, inputs:int, outputs:int, random_init:bool = True):
     assert neurons_per_layer[-1] == outputs,"Número de neurônios na última camada deve ser igual ao número de classes"
     aux = []
     for k,i in enumerate(neurons_per_layer):
@@ -110,8 +113,8 @@ def begin_mlp(neurons_per_layer:list, inputs:int, outputs:int):
             aux.append(single_layer(i, inputs))
         else:
             aux.append(single_layer(i, neurons_per_layer[k-1]))
-    
     mlp = multi_layer(aux)
+    if random_init: mlp.weight_random_init()
     return mlp
     
     
