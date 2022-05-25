@@ -8,6 +8,7 @@ Created on Wed Apr 20 14:35:43 2022
 
 from sklearn.utils import resample
 import network.perceptron as p
+from numpy import random as rd
 from os import getcwd
 import numpy as np
 
@@ -35,17 +36,11 @@ def gera_dados(raio:list or np.array, xy:list, n_ponto:int = None,
             n = np.pi*r**2*rho
         else:
             n = n_ponto
-        print(xy_a)
         value_max   = xy_a + r
         value_min   = xy_a - r
-        a           = (value_max - value_min)*value_max
-        print(a)
-        aux = [a[i]*np.random.random(n)+value_min[i] for i in range(len(a))]
-        C.append(aux)
+        C.append([rd.random(n)+rd.randint(value_min[i],
+                                       value_max[i], size = n) for i in range(len(xy_a))])
     return C
-
-
-
     
 #%% Treinamento
 def training_layer(layer:p.single_layer, database:np.array, data_out:np.array, 
@@ -77,7 +72,9 @@ def training_layer(layer:p.single_layer, database:np.array, data_out:np.array,
             break
         if epoca%show_per_epoca == 0:
             print('-'*10+ f'Época de treinamento {epoca}'+'-'*10)
-            print(f'Erro na época {epoca} = {erro_n[-1]/rows}')
+            print(f'Erro na época {epoca} = {erro_n[-1]}')
+    
+    return np.array(erro_n)
 
         
 def training_multi_layer(mlp:p.multi_layer, database:np.array, data_out:np.array, 

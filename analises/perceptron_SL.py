@@ -14,14 +14,16 @@ import network.practice as tr
 #%% Seed
 np.random.seed(1)
 
-#%% Funções
-
-
-
-
 #%% Gera dados linearmente Separáveis
+C = tr.gera_dados([20, 20,20],[[100,3], [155,24], [112.5, 50]], n_ponto = 350)
 
+labels = ['classe 1', 'classe 2', 'classe 3']
+cor    = ['b','r','g'] 
+for i in range (len(C)):
+    x,y = C[i]
+    plt.plot(x,y,f'{cor[i]}o', label = f'{labels[i]}')
 
+plt.show()
 
 
 #%% berries
@@ -45,13 +47,22 @@ def eta(ssns):
     x  = (xf-x0)/(100_000) * ssns + x0
     return np.exp(-x)
 #%% Criando camada
+
 model = p.single_layer(3,2)
-#%% Treinamento e Desempenho
+
+#%% Treinamento
+erro = tr.training_layer(model, inp,out)
+
+#%%
+epocas = np.arange(1,len(erro)+1)
+plt.plot(epocas, erro)
+
+#%% Desempenho
 training_function = lambda database, data_out: tr.training_layer(model, 
                                                                  database, 
                                                                  data_out, 
                                                                  number_of_epoca = 60_000)
-tr.bootstrap_singlelayer(model,training_function,inp, out)
+a = tr.bootstrap_singlelayer(model,training_function,inp, out)
 
 
 
