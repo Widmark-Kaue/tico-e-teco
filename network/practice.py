@@ -7,11 +7,11 @@ Created on Wed Apr 20 14:35:43 2022
 """
 
 import numpy as np
-import perceptron as p
+import network.perceptron as p
 from os import getcwd
 from sklearn.utils import resample
 #%% Pastas de databases
-path_data   = f'{getcwd()}/dados'
+path_data   = f"{getcwd().replace('analises', '')}/dados"
 
 #%% Treinamento
 def training_layer(layer:p.single_layer, database:np.array, data_out:np.array, 
@@ -70,8 +70,8 @@ def training_multi_layer(mlp:p.multi_layer, database:np.array, data_out:np.array
               if k == len(mlp.layer_list) - 1:                  #Output Layer
                   e_k   = (data_out[row] - phi_v[-1])
                   erro_n+= sum(e_k**2/2)
-              else:
-                  bfr_layer = mlp.layer_list[k+1]                                               #Hidden Layer
+              else:                                             #Hidden Layer
+                  bfr_layer = mlp.layer_list[k+1]             
                   e_k   = np.dot(delta_k[-1].T, bfr_layer.weight_matriz[:,1:])
                   
               aux2      = e_k*dphi_v[k]

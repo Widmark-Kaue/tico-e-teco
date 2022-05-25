@@ -7,12 +7,21 @@ Created on Tue May 24 13:21:43 2022
 """
 
 import matplotlib.pyplot as plt
-import network.perceptron as pe
-import network.practice as tr
 import numpy as np
+import network.perceptron as p
+import network.practice as tr
 
-#%% import data
+#%% Funções
 
+
+
+
+#%% Gera dados linearmente Separáveis
+
+
+
+
+#%%
 inp = np.loadtxt(f'{tr.path_data}/input_berries.txt')
 out = np.loadtxt(f'{tr.path_data}/output_berries.txt')
 
@@ -27,15 +36,18 @@ plt.grid()
 plt.legend()
 plt.show()
 #%% funções taxa de aprendizado
-def f(ssns):
+def eta(ssns):
     x0 = 5.13e-2
     xf = 2.3026
     x  = (xf-x0)/(100_000) * ssns + x0
     return np.exp(-x)
-#%% Treinamento
+#%% Treinamento e Desempenho
 
 model = pe.single_layer(3,2)
 model.weight_random_init()
+
+t
+
 
 
 
