@@ -105,7 +105,7 @@ class multi_layer:
             
 #%% Função de criação do mlp
 
-def begin_mlp(neurons_per_layer:list, inputs:int, outputs:int, random_init:bool = True):
+def create_mlp(neurons_per_layer:list, inputs:int, outputs:int, random_init:bool = True):
     assert neurons_per_layer[-1] == outputs,"Número de neurônios na última camada deve ser igual ao número de classes"
     aux = []
     for k,i in enumerate(neurons_per_layer):

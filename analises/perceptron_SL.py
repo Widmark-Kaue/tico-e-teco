@@ -11,6 +11,9 @@ import numpy as np
 import network.perceptron as p
 import network.practice as tr
 
+#%% Seed
+np.random.seed(1)
+
 #%% Funções
 
 
@@ -21,7 +24,7 @@ import network.practice as tr
 
 
 
-#%%
+#%% berries
 inp = np.loadtxt(f'{tr.path_data}/input_berries.txt')
 out = np.loadtxt(f'{tr.path_data}/output_berries.txt')
 
@@ -41,12 +44,14 @@ def eta(ssns):
     xf = 2.3026
     x  = (xf-x0)/(100_000) * ssns + x0
     return np.exp(-x)
+#%% Criando camada
+model = p.single_layer(3,2)
 #%% Treinamento e Desempenho
-
-model = pe.single_layer(3,2)
-model.weight_random_init()
-
-t
+training_function = lambda database, data_out: tr.training_layer(model, 
+                                                                 database, 
+                                                                 data_out, 
+                                                                 number_of_epoca = 60_000)
+tr.bootstrap_singlelayer(model,training_function,inp, out)
 
 
 

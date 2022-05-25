@@ -5,5 +5,5 @@ Created on Tue Apr 19 21:06:07 2022
 
 @author: widmark
 """
-from perceptron import perceptron
-from practice import practice
+from network import perceptron
+from network import practice
