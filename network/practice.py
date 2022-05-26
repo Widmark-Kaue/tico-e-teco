@@ -14,7 +14,7 @@ import numpy as np
 
 #%% Pastas de databases
 path_data   = f"{getcwd().replace('analises', '')}/dados"
-
+path_save   = f"{path_data.replace('dados','')}/resultados" 
 #%% Funções
 
 def gera_dados(raio:list or np.array, xy:list, n_ponto:int = None,
@@ -46,7 +46,10 @@ def gera_dados(raio:list or np.array, xy:list, n_ponto:int = None,
 def training_layer(layer:p.single_layer, database:np.array, data_out:np.array, 
                          eta:any = lambda x: 0.1, number_of_epoca:int = 80_000, 
                          show_per_epoca:int = 1000, random:bool = True, 
-                         tol:float = 1e-5):
+                         tol:float = 1e-3):
+    _,col = data_out.shape
+    
+    assert layer.number_of_neurons >= col, "Número de neurônios dever maior ou igual ao número de classes"
     
     rows, cols = database.shape
     row_vector = np.arange(0, rows)
@@ -70,7 +73,7 @@ def training_layer(layer:p.single_layer, database:np.array, data_out:np.array,
             print("Perceptron Convergiu")
             print(f'Erro na última época = {erro_n[-1]}')
             break
-        if epoca%show_per_epoca == 0:
+        if show_per_epoca != None and epoca%show_per_epoca == 0:
             print('-'*10+ f'Época de treinamento {epoca}'+'-'*10)
             print(f'Erro na época {epoca} = {erro_n[-1]}')
     
@@ -80,7 +83,7 @@ def training_layer(layer:p.single_layer, database:np.array, data_out:np.array,
 def training_multi_layer(mlp:p.multi_layer, database:np.array, data_out:np.array, 
                          number_of_epoca:int = 80_000, show_per_epoca:int = 1000, 
                          eta:any = lambda x: 0.1, random:bool = True, 
-                         tol:float = 1e-5):
+                         tol:float = 1e-3):
     
     
     rows,_     = database.shape
@@ -128,53 +131,40 @@ def training_multi_layer(mlp:p.multi_layer, database:np.array, data_out:np.array
             print("Perceptron Convergiu")
             print(f'Erro na última época = {erro_N/epoca}')
             break
-        if epoca%show_per_epoca == 0:
+        if show_per_epoca != None and epoca%show_per_epoca == 0:
             print('-'*10+ f'Época de treinamento {epoca}'+'-'*10)
             print(f'Erro médio = {erro_N}')
             print(f'Erro médio por época = {erro_N/epoca}')  
             print(f'Saída = {phi_v[-1]}')
             
-#%% Desempenho
-def bootstrap_singlelayer (model:p.single_layer,training_function:any,
-                           database:np.array, data_out:np.array,N:int=10):
+#%% Avaliação de performance
+
+def bootstrap_singlelayer (model:p.single_layer, training_function:any,
+                           database:np.array, dataout:np.array, Bs:int = 12):
     erro = []
-    for foo in range(N):
-        print(f'======================= BOOTSTRAP {foo} =======================')
+    f = lambda x: x != -3
+    for boot in range(1,Bs+1):
+        print(f'======================= BOOTSTRAP {boot} =======================')
         model.weight_random_init()
-        train_index = resample(list(range(len(database))))
-        test_index  = list(filter(lambda x: x!=-1,
-                      [i if not i in train_index else -1 for i in range(len(database))]))
+        ind         = np.arange(0, len(database)) 
+        training    = resample(ind)
+        avaliation  = [ -3 if j in training else j for j in ind]
+        avaliation  = list(filter(f, avaliation))
+      
         
-        data_train      = np.array([database[i] for i in train_index])
-        results_train   = np.array([data_out[i] for i in train_index])
-        
-        data_test       = np.array([database[i] for i in test_index])
-        results_test    = np.array([data_out[i] for i in test_index])
+        database_tr = np.array([database[i] for i in training])
+        dataout_tr  = np.array([dataout[i]  for i in training])
+        database_tt = np.array([database[i] for i in avaliation])
+        dataout_tt  = np.array([dataout[i]  for i in avaliation])
 
-        training_function(data_train, results_train)
-        erro_iteration  = 0
-        for i,res in enumerate(data_test):
-            if not all(model.apply(res) == results_test[i]):
-                erro_iteration+=1
-        erro.append(erro_iteration/len(results_test))
-        print(f'--> erro bootstrap: {erro_iteration/len(results_test)}')
-    return np.average(erro), np.std(erro), np.array(erro)
-
-#%%teste uma camada
-
-#%% teste mlp
-# =============================================================================
-# inp = np.loadtxt(pasta + 'input_berries.txt')
-# out = np.loadtxt(pasta + 'output_berries.txt')
-# 
-# lista1 = [p.single_layer(3,2), p.single_layer(2,3)]
-# 
-# mlp = p.begin_mlp([3,2,3], 2, 3, random_init=False)
-# 
-# 
-# training_multi_layer(mlp, inp, out, number_of_epoca=10000)
-# =============================================================================
-
+        training_function(database_tr, dataout_tr)
+        Tx_erro     = 0
+        for i, dtt in enumerate(database_tt):
+            if not all(model.apply_abs(dtt) == dataout_tt[i]):
+                Tx_erro+=1
+        erro.append(Tx_erro/len(dataout_tt))
+        print(f'>>> Erro Bootstraps: {erro[-1]} <<<')
+    return np.std(erro), np.average(erro) 
 
 
 

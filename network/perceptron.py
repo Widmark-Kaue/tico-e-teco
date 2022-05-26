@@ -25,14 +25,19 @@ def dsigmoid(v):
 
 #%%
 class single_layer:
-    def __init__(self, number_of_neurons:int, number_of_atributes:int,
-                 func_activation:any = sigmoid):
-        self.number_of_atributes    = number_of_atributes
+    
+    def __init__(self, neurons:int, atributes:int,func_activation:any = sigmoid, 
+                 threshold: float = 0.5):
+   
+        self.number_of_atributes    = atributes
         self.number_of_inputs       = self.number_of_atributes + 1
-        self.number_of_neurons      = number_of_neurons
+        self.number_of_neurons      = neurons
         self.weight_matriz          = np.zeros([self.number_of_neurons, self.number_of_inputs])
         self.phi                    = func_activation
-    
+        self.thr                    = threshold
+        
+        assert  0 < self.thr < 1, "Threshold deve ser um número entre 0 e 1"
+        
     def __repr__(self):
         rep  = f'Camada:{self.number_of_neurons} neurônios \nEntradas:{self.number_of_atributes} atributos mais o bias\n\n'
         rep += 'Pesos:\n'
@@ -48,15 +53,6 @@ class single_layer:
                 rep += f'|w{j} =' + sin + f'{abs(x):.3e}' + '|\n'
             rep += '-'*16 + '\n'
         return rep
-        
-    def weight_random_init(self, value_max:int = 1, value_min:int = -1):
-        assert value_max >= value_min, "Valor máximo dever ser maior ou igual que valor mínimo"
-        a = (value_max - value_min)*value_max
-        self.weight_matriz = a*np.random.random(self.weight_matriz.shape) + value_min
-        
-    def weight_aplicate(self, new_weight:np.array):
-        assert self.weight_matriz.shape == new_weight.shape, "Matriz de peso incoerente com a camada"
-        self.weight_matriz = new_weight.copy()
     
     def field_ind(self, data_input:np.array):
         assert len(data_input) == self.number_of_atributes, "Dados incoerentes com o número de atributos"
@@ -69,6 +65,17 @@ class single_layer:
         phi_v = [self.phi(i) for i in v]
         return np.array(phi_v)
     
+    def apply_abs(self, data_input:np.array):
+        phi_v = self.apply(data_input)
+        phi_abs = [1 if k >= self.thr else 0 for k in phi_v]
+        return np.array(phi_abs)
+    
+    def weight_random_init(self,a:int = 1):
+        self.weight_matriz = a*np.random.random(self.weight_matriz.shape)
+        
+    def weight_aplicate(self, new_weight:np.array):
+        assert self.weight_matriz.shape == new_weight.shape, "Matriz de peso incoerente com a camada"
+        self.weight_matriz = new_weight.copy()
 
     
 class multi_layer:
@@ -96,12 +103,22 @@ class multi_layer:
         phi_v,_ = self._foward_propagation_(data)
         return phi_v[-1]
     
+    def apply_abs(self, data:np.array):
+        thr = self.layer_list[-1].thr
+        phi_v = self.apply(data)
+        phi_abs = [1 if k >= thr else 0 for k in phi_v]
+        return np.array(phi_abs)
+    
+    def threshold(self, new_threshold):
+        self.layer_list[-1].thr = new_threshold
+    
     def weight_list(self,):
         return [layer.weight_matriz for layer in self.layer_list]
     
     def weight_random_init(self, value_max:int = 1, value_min:int = -1):
         for layer_i in self.layer_list:
             layer_i.weight_random_init(value_max, value_min)
+            
             
 #%% Função de criação do mlp
 
