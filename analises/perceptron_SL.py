@@ -15,7 +15,7 @@ import numpy as np
 #%% Seed
 np.random.seed(2524)
 
-save = True
+save = False
 #%%
 # =============================================================================
 #                           ANÁLISE SINTETIC DATA
@@ -100,7 +100,7 @@ for i in range (len(C)):
     plt.plot(x,y,f'{cor[i]}o', label = f'{labels[i]}')
     plt.plot(x_a, func[i](x_a), f'{cor[i]}')
     
-plt.title('Base de Dados Sintética')
+plt.title('Separação das Classes')
 plt.xlabel('Atributo 1')
 plt.ylabel('Atributo 2')
 plt.legend()
@@ -109,14 +109,7 @@ if save:
     plt.savefig(f'{tr.path_save}/imagens/reta',dpi = 720) 
 plt.show()    
 
-#%% Sintetic - Experimentos com eta
-def f_eta(ssns): 
-    x0 = 5.13e-2
-    xf = 2.3026
-    x  = (xf-x0)/(100_000) * ssns + x0
-    return np.exp(-x)
-
-
+#%% Sintetic - Experimentos com etas Fixos
 eta_val = [0.5, 0.3, 0.15, 0.1, 0.05, 0.01]
 eta_dict = {}
 model3 = p.single_layer(2,2)
@@ -124,26 +117,96 @@ for i in eta_val:
     model3.weight_random_init(0)
     erro = tr.training_layer(model3, sint_input, sint_output, eta = lambda x: i, show_per_epoca = None)
     eta_dict[str(i)] = erro.copy()
+#%% Plot etas fixos
+
+for i in eta_val:
+    temp = eta_dict[str(i)]
+    epoca = np.arange(1,len(temp)+1)
+    plt.plot(epoca, temp, alpha = i + 0.5, label = f'$\eta$ = {i}')
+
+plt.title("Comparação entre Taxas de aprendizagens Fixas")
+plt.xlabel('Épocas')
+plt.ylabel('Erro RMS')
+
+plt.legend()
+plt.grid()
+if save:
+    plt.savefig(f'{tr.path_save}/imagens/eta_fixo',dpi = 720) 
+plt.show()
+#%% Experimentos com etas variáveis
+def exp_eta(epoca:int, epoca_final:int, eta0:float = 0.5, etaf:float = 0.1): 
+    x0 = -np.log(eta0)
+    xf = -np.log(etaf)
+    x  = (xf-x0)/(epoca_final -1) * (epoca-1) + x0
+    return np.exp(-x)
+
+def rampa_eta(epoca:int, epoca_final:int, eta0:float = 0.5, etaf:float = 0.05):
+    return ((etaf - eta0)/(epoca_final- 1))*(epoca-1) + eta0
+
+rampa_eta_f = lambda x: rampa_eta(x, 5_000)
+exp_eta_f   = lambda x: exp_eta(x, 5_000) 
+
 
 model3.weight_random_init(0)
-erro = tr.training_layer(model3, sint_input, sint_output, eta = f_eta)
-eta_dict["f_eta"] = erro.copy()
+erro = tr.training_layer(model3, sint_input, sint_output, eta = rampa_eta_f)
+eta_dict["rampa_eta"] = erro.copy()
+
+model3.weight_random_init(0)
+erro = tr.training_layer(model3, sint_input, sint_output, eta = exp_eta_f)
+eta_dict["exp_eta"] = erro.copy()
+#%% Plot eta variável
+
+eta_rampa = eta_dict['rampa_eta']
+eta_exp   = eta_dict['exp_eta']
+
+epoca_rampa = np.arange(1, len(eta_rampa) +1)
+epoca_exp   = np.arange(1, len(eta_exp)   +1)
+
+plt.plot(epoca_rampa,   eta_rampa,    label = 'Rampa')
+plt.plot(epoca_exp,     eta_exp,      label = 'Exp'  )
+
+
+plt.title("Comparação entre Taxas de aprendizagens Variáveis")
+plt.xlabel('Épocas')
+plt.ylabel('Erro RMS')
+
+plt.legend()
+plt.grid()
+if save:
+    plt.savefig(f'{tr.path_save}/imagens/eta_variável',dpi = 720) 
+plt.show()
+
+
 #%% Sintetic - Desempenho
-model4 = p.single_layer(2,2)
+model4  = p.single_layer(2,2)
+model41 = p.single_layer(2,2)
 training_function = lambda database, data_out: tr.training_layer(model4, 
                                                                   database, 
-                                                                  data_out, 
-                                                                  number_of_epoca = 60_000,
+                                                                  data_out,
+                                                                  eta = lambda x: 0.3,
+                                                                  number_of_epoca = 10_000,
                                                                   show_per_epoca = None)
 
+training_function2 = lambda database, data_out: tr.training_layer(model4, 
+                                                                  database, 
+                                                                  data_out,
+                                                                  eta = exp_eta_f,
+                                                                  number_of_epoca = 10_000,
+                                                                  show_per_epoca = None)
 
-boot1 = tr.bootstrap_singlelayer(model4,training_function,sint_input, sint_output)
+boot11 = tr.bootstrap_singlelayer(model4,training_function,sint_input, sint_output, Bs = 10)
+boot22 = tr.bootstrap_singlelayer(model4,training_function2,sint_input, sint_output, Bs = 10)
 
-np.savetxt(f"{tr.path_save}/arquivos/boot", boot1)
+np.savetxt(f"{tr.path_save}/arquivos/boot_0.3", boot11)
+np.savetxt(f"{tr.path_save}/arquivos/boot_exp", boot22)
+
 # Resultados bootstrap
-print(f'Média = {round(boot1[1]*100,3)}%')
-print(f'Desvio padrão = {round(boot1[0]*100,3)}%')
-
+print("Eta constante - 0.3")
+print(f'Média = {round(boot11[1]*100,3)}%')
+print(f'Desvio padrão = {round(boot11[0]*100,3)}%\n')
+print("Eta curva exponencial")
+print(f'Média = {round(boot22[1]*100,3)}%')
+print(f'Desvio padrão = {round(boot22[0]*100,3)}%')
 
 #%%
 # =============================================================================
@@ -199,11 +262,11 @@ training_function = lambda database, data_out: tr.training_layer(model7,
                                                                   show_per_epoca =  60_000)
 
 boot2 = tr.bootstrap_singlelayer(model7,training_function,iris_input, iris_output)
-#%%
 np.savetxt(f"{tr.path_save}/arquivos/boot2.txt", boot2)
 # Resultados bootstrap
 print(f'Média = {round(boot2[1]*100,3)}%')
 print(f'Desvio padrão = {round(boot2[0]*100,3)}%')
+#%%
 
 
 
